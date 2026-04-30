@@ -46,14 +46,25 @@
   .row {
     display: flex;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #2a2a2a;
+    padding: 10px 8px;
     font-size: 18px;
+    border-radius: 4px;
   }
+  .row:nth-child(odd)  { background: #1a1a1a; }
+  .row:nth-child(even) { background: #222; }
+  .row.done { opacity: 0.4; text-decoration: line-through; }
   .row.start {
     font-size: 22px;
     font-weight: bold;
     color: #fff;
+  }
+  .row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    accent-color: #4af;
+    flex-shrink: 0;
+    cursor: pointer;
   }
   .row .expr { color: #888; flex: 1; }
   .row .eq { color: #aaa; margin: 0 8px; }
@@ -70,14 +81,12 @@
     }
     #results {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 4px 12px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 4px 8px;
     }
     .row {
       padding: 6px 8px;
-      background: #1a1a1a;
       border-radius: 6px;
-      border-bottom: none;
       font-size: 15px;
     }
     .row.start { font-size: 17px; }
@@ -124,7 +133,10 @@
     let cur = v0;
     const startRow = document.createElement('div');
     startRow.className = 'row start';
-    startRow.innerHTML = `<span class="val">${fmt(cur)}</span>`;
+    startRow.innerHTML = `<input type="checkbox"><span class="val">${fmt(cur)}</span>`;
+    startRow.querySelector('input').addEventListener('change', e => {
+      startRow.classList.toggle('done', e.target.checked);
+    });
     out.appendChild(startRow);
 
     for (let i = 1; i <= vN * 2; i++) {
@@ -136,10 +148,14 @@
       const row = document.createElement('div');
       row.className = 'row';
       row.innerHTML = `
+        <input type="checkbox">
         <span class="expr">${fmt(prev)} <span class="${cls}">+ ${fmt(addend)}</span></span>
         <span class="eq">=</span>
         <span class="val">${fmt(cur)}</span>
       `;
+      row.querySelector('input').addEventListener('change', e => {
+        row.classList.toggle('done', e.target.checked);
+      });
       out.appendChild(row);
     }
   }
