@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>繰り返し足し算</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    color: #fff;
+    font-family: -apple-system, sans-serif;
+    padding: 16px;
+  }
+
+  .inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .input-group label {
+    display: block;
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 4px;
+  }
+  .input-group input {
+    width: 100%;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 20px;
+    padding: 10px 12px;
+    outline: none;
+  }
+  .input-group input:focus { border-color: #888; }
+
+  #results {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #2a2a2a;
+    font-size: 18px;
+  }
+  .row.start {
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff;
+  }
+  .row .expr { color: #888; flex: 1; }
+  .row .eq { color: #aaa; margin: 0 8px; }
+  .row .val { font-weight: bold; color: #fff; }
+  .row .addend-a { color: #4af; }
+  .row .addend-b { color: #fa4; }
+
+  /* 横画面 */
+  @media (orientation: landscape) {
+    body { padding: 10px; }
+    .inputs {
+      grid-template-columns: repeat(4, 1fr);
+      margin-bottom: 12px;
+    }
+    #results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 4px 12px;
+    }
+    .row {
+      padding: 6px 8px;
+      background: #1a1a1a;
+      border-radius: 6px;
+      border-bottom: none;
+      font-size: 15px;
+    }
+    .row.start { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="inputs">
+  <div class="input-group">
+    <label>開始値</label>
+    <input type="number" id="v0" value="30" inputmode="numeric">
+  </div>
+  <div class="input-group">
+    <label>数値A（奇数回）</label>
+    <input type="number" id="vA" value="600" inputmode="numeric">
+  </div>
+  <div class="input-group">
+    <label>数値B（偶数回）</label>
+    <input type="number" id="vB" value="30" inputmode="numeric">
+  </div>
+  <div class="input-group">
+    <label>繰り返し回数</label>
+    <input type="number" id="vN" value="15" inputmode="numeric" min="1" max="100">
+  </div>
+</div>
+
+<div id="results"></div>
+
+<script>
+  function fmt(n) {
+    return Number(n).toLocaleString('ja-JP');
+  }
+
+  function calc() {
+    const v0 = parseFloat(document.getElementById('v0').value) || 0;
+    const vA = parseFloat(document.getElementById('vA').value) || 0;
+    const vB = parseFloat(document.getElementById('vB').value) || 0;
+    const vN = Math.max(1, Math.min(100, parseInt(document.getElementById('vN').value) || 15));
+
+    const out = document.getElementById('results');
+    out.innerHTML = '';
+
+    let cur = v0;
+    const startRow = document.createElement('div');
+    startRow.className = 'row start';
+    startRow.innerHTML = `<span class="val">${fmt(cur)}</span>`;
+    out.appendChild(startRow);
+
+    for (let i = 1; i <= vN * 2; i++) {
+      const addend = (i % 2 === 1) ? vA : vB;
+      const cls = (i % 2 === 1) ? 'addend-a' : 'addend-b';
+      const prev = cur;
+      cur = prev + addend;
+
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `
+        <span class="expr">${fmt(prev)} <span class="${cls}">+ ${fmt(addend)}</span></span>
+        <span class="eq">=</span>
+        <span class="val">${fmt(cur)}</span>
+      `;
+      out.appendChild(row);
+    }
+  }
+
+  document.querySelectorAll('input').forEach(el => el.addEventListener('input', calc));
+  calc();
+</script>
+</body>
+</html>
