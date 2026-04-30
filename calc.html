@@ -17,10 +17,19 @@
     padding: 16px;
   }
 
+  .section-label {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 14px 0 6px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
   .inputs {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
     margin-bottom: 20px;
   }
   .input-group label {
@@ -40,6 +49,22 @@
     outline: none;
   }
   .input-group input:focus { border-color: #888; }
+  .input-group.full { grid-column: 1 / -1; }
+
+  .group-box {
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .group-box .group-title {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+  .group-box.g1 { border-color: #1e3a5f; }
+  .group-box.g2 { border-color: #3a2a10; }
 
   #results {
     display: flex;
@@ -74,68 +99,131 @@
   .row .expr { color: #888; flex: 1; }
   .row .eq { color: #aaa; margin: 0 8px; }
   .row .val { font-weight: bold; color: #fff; }
-  .row .addend-a { color: #4af; }
-  .row .addend-b { color: #fa4; }
+  .addend-g1a { color: #4af; }
+  .addend-g1b { color: #7cf; }
+  .addend-g2a { color: #fa4; }
+  .addend-g2b { color: #fc8; }
 
   /* 横画面 */
   @media (orientation: landscape) {
     body { padding: 10px; }
-    .inputs {
-      grid-template-columns: repeat(4, 1fr);
+    .inputs-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
       margin-bottom: 12px;
     }
+    .group-box { margin-bottom: 0; }
     #results {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 4px 8px;
     }
-    .row {
-      padding: 6px 8px;
-      border-radius: 6px;
-      font-size: 15px;
-    }
+    .row { padding: 6px 8px; border-radius: 6px; font-size: 15px; }
     .row.start { font-size: 17px; }
   }
 </style>
 </head>
 <body>
 
-<div class="inputs">
-  <div class="input-group">
-    <label>開始値</label>
-    <input type="number" id="v0" value="30" inputmode="numeric">
+<div class="inputs-wrap">
+  <div class="group-box">
+    <div class="group-title">開始値</div>
+    <div class="inputs" style="grid-template-columns:1fr;">
+      <div class="input-group">
+        <label>数値1（開始）</label>
+        <input type="number" id="v1" inputmode="numeric" placeholder="0">
+      </div>
+    </div>
   </div>
-  <div class="input-group">
-    <label>数値A（奇数回）</label>
-    <input type="number" id="vA" value="600" inputmode="numeric">
+
+  <div class="group-box g1">
+    <div class="group-title">グループ1</div>
+    <div class="inputs">
+      <div class="input-group">
+        <label>数値2</label>
+        <input type="number" id="v2" inputmode="numeric" placeholder="0">
+      </div>
+      <div class="input-group">
+        <label>数値3（0=省略）</label>
+        <input type="number" id="v3" inputmode="numeric" placeholder="0">
+      </div>
+      <div class="input-group full">
+        <label>数値4（繰り返し回数）</label>
+        <input type="number" id="v4" inputmode="numeric" placeholder="1" min="0" max="100">
+      </div>
+    </div>
   </div>
-  <div class="input-group">
-    <label>数値B（偶数回）</label>
-    <input type="number" id="vB" value="30" inputmode="numeric">
-  </div>
-  <div class="input-group">
-    <label>繰り返し回数</label>
-    <input type="number" id="vN" value="15" inputmode="numeric" min="1" max="100">
+
+  <div class="group-box g2">
+    <div class="group-title">グループ2</div>
+    <div class="inputs">
+      <div class="input-group">
+        <label>数値5（0=省略）</label>
+        <input type="number" id="v5" inputmode="numeric" placeholder="0">
+      </div>
+      <div class="input-group">
+        <label>数値6（0=省略）</label>
+        <input type="number" id="v6" inputmode="numeric" placeholder="0">
+      </div>
+      <div class="input-group full">
+        <label>数値7（繰り返し回数）</label>
+        <input type="number" id="v7" inputmode="numeric" placeholder="0" min="0" max="100">
+      </div>
+    </div>
   </div>
 </div>
 
 <div id="results"></div>
 
 <script>
-  function fmt(n) {
-    return Number(n).toLocaleString('ja-JP');
+  const IDS = ['v1','v2','v3','v4','v5','v6','v7'];
+
+  function save() {
+    const data = {};
+    IDS.forEach(id => data[id] = document.getElementById(id).value);
+    localStorage.setItem('shitaana_v2', JSON.stringify(data));
+  }
+
+  function load() {
+    try {
+      const data = JSON.parse(localStorage.getItem('shitaana_v2') || '{}');
+      IDS.forEach(id => { if (data[id] !== undefined) document.getElementById(id).value = data[id]; });
+    } catch(e) {}
+  }
+
+  function fmt(n) { return Number(n).toLocaleString('ja-JP'); }
+
+  function addRow(out, prev, addend, cls) {
+    const cur = prev + addend;
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <input type="checkbox">
+      <span class="expr">${fmt(prev)} <span class="${cls}">+ ${fmt(addend)}</span></span>
+      <span class="eq">=</span>
+      <span class="val">${fmt(cur)}</span>
+    `;
+    row.querySelector('input').addEventListener('change', e => {
+      row.classList.toggle('done', e.target.checked);
+    });
+    out.appendChild(row);
+    return cur;
   }
 
   function calc() {
-    const v0 = parseFloat(document.getElementById('v0').value) || 0;
-    const vA = parseFloat(document.getElementById('vA').value) || 0;
-    const vB = parseFloat(document.getElementById('vB').value) || 0;
-    const vN = Math.max(1, Math.min(100, parseInt(document.getElementById('vN').value) || 15));
+    save();
+    const g = id => parseFloat(document.getElementById(id).value) || 0;
+    const gi = id => Math.max(0, Math.min(100, parseInt(document.getElementById(id).value) || 0));
+
+    const v1 = g('v1');
+    const v2 = g('v2'), v3 = g('v3'), v4 = gi('v4');
+    const v5 = g('v5'), v6 = g('v6'), v7 = gi('v7');
 
     const out = document.getElementById('results');
     out.innerHTML = '';
 
-    let cur = v0;
+    let cur = v1;
     const startRow = document.createElement('div');
     startRow.className = 'row start';
     startRow.innerHTML = `<input type="checkbox"><span class="val">${fmt(cur)}</span>`;
@@ -144,29 +232,22 @@
     });
     out.appendChild(startRow);
 
-    for (let i = 1; i <= vN * 2; i++) {
-      const addend = (i % 2 === 1) ? vA : vB;
-      const cls = (i % 2 === 1) ? 'addend-a' : 'addend-b';
-      const prev = cur;
-      cur = prev + addend;
+    // Group 1
+    for (let i = 0; i < v4; i++) {
+      if (v2 !== 0) cur = addRow(out, cur, v2, 'addend-g1a');
+      if (v3 !== 0) cur = addRow(out, cur, v3, 'addend-g1b');
+    }
 
-      const row = document.createElement('div');
-      row.className = 'row';
-      row.innerHTML = `
-        <input type="checkbox">
-        <span class="expr">${fmt(prev)} <span class="${cls}">+ ${fmt(addend)}</span></span>
-        <span class="eq">=</span>
-        <span class="val">${fmt(cur)}</span>
-      `;
-      row.querySelector('input').addEventListener('change', e => {
-        row.classList.toggle('done', e.target.checked);
-      });
-      out.appendChild(row);
+    // Group 2
+    for (let i = 0; i < v7; i++) {
+      if (v5 !== 0) cur = addRow(out, cur, v5, 'addend-g2a');
+      if (v6 !== 0) cur = addRow(out, cur, v6, 'addend-g2b');
     }
   }
 
-  document.querySelectorAll('input').forEach(el => el.addEventListener('input', calc));
+  load();
   calc();
+  document.querySelectorAll('input[type=number]').forEach(el => el.addEventListener('input', calc));
 </script>
 </body>
 </html>
