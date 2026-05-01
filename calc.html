@@ -14,63 +14,17 @@
     background: #111;
     color: #fff;
     font-family: -apple-system, sans-serif;
-    padding: 16px;
-  }
-
-  .section-label {
-    font-size: 11px;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin: 14px 0 6px;
-  }
-  .section-label:first-child { margin-top: 0; }
-
-  .inputs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-  .input-group label {
-    display: block;
-    font-size: 12px;
-    color: #aaa;
-    margin-bottom: 4px;
-  }
-  .input-group input {
-    width: 100%;
-    background: #222;
-    border: 1px solid #444;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 20px;
-    padding: 10px 12px;
-    outline: none;
-  }
-  .input-group input:focus { border-color: #888; }
-  .input-group.full { grid-column: 1 / -1; }
-
-  .group-box {
-    border: 1px solid #333;
-    border-radius: 10px;
-    padding: 12px;
-    margin-bottom: 10px;
-  }
-  .group-box .group-title {
-    font-size: 11px;
-    color: #888;
-    margin-bottom: 8px;
-    letter-spacing: 0.5px;
-  }
-  .group-box.g1 { border-color: #1e3a5f; }
-  .group-box.g2 { border-color: #3a2a10; }
-
-  #results {
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    gap: 0;
   }
+
+  #results-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 12px 0;
+  }
+  #results { display: flex; flex-direction: column; }
 
   .row {
     display: flex;
@@ -81,173 +35,216 @@
   }
   .row:nth-child(odd)  { background: #1a1a1a; }
   .row:nth-child(even) { background: #222; }
-  .row.done { opacity: 0.4; text-decoration: line-through; }
-  .row.start {
-    font-size: 22px;
+  .row.done { opacity: 0.35; text-decoration: line-through; }
+
+  .row.type-a {
+    font-size: 20px;
     font-weight: bold;
-    color: #fff;
+    border-left: 3px solid #555;
+    padding-left: 10px;
   }
-  .row.start .val { margin-left: auto; }
+  .row.type-a .val { margin-left: auto; }
+
   .row input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
+    width: 22px; height: 22px;
     margin-right: 10px;
     accent-color: #4af;
     flex-shrink: 0;
     cursor: pointer;
   }
-  .row .expr { color: #888; flex: 1; }
-  .row .eq { color: #aaa; margin: 0 8px; }
-  .row .val { font-weight: bold; color: #fff; }
-  .addend-g1a { color: #4af; }
-  .addend-g1b { color: #7cf; }
-  .addend-g2a { color: #fa4; }
-  .addend-g2b { color: #fc8; }
+  .row .expr { color: #888; flex: 1; font-size: 15px; }
+  .row .eq   { color: #666; margin: 0 6px; font-size: 15px; }
+  .row .val  { font-weight: bold; color: #fff; white-space: nowrap; }
+  .cl-b { color: #4af; }
+  .cl-c { color: #fa4; }
+  .cl-d { color: #8f8; }
 
-  /* 横画面 */
+  #input-panel {
+    background: #181818;
+    border-top: 1px solid #333;
+    padding: 12px;
+  }
+  .irow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .irow:last-child { margin-bottom: 0; }
+  .ig label {
+    display: block;
+    font-size: 10px;
+    color: #777;
+    margin-bottom: 3px;
+  }
+  .ig input {
+    width: 100%;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 18px;
+    padding: 7px 8px;
+    outline: none;
+    text-align: right;
+  }
+  .ig input:focus { border-color: #888; }
+  .ig.w2 { grid-column: span 2; }
+  .ig.w4 { grid-column: span 4; }
+
   @media (orientation: landscape) {
-    body { padding: 10px; }
-    .inputs-wrap {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .group-box { margin-bottom: 0; }
+    body { flex-direction: row; }
+    #results-wrap { flex: 1; padding: 10px; }
     #results {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
       gap: 4px 8px;
     }
-    .row { padding: 6px 8px; border-radius: 6px; font-size: 15px; }
-    .row.start { font-size: 17px; }
+    #input-panel {
+      width: 270px;
+      border-top: none;
+      border-left: 1px solid #333;
+      overflow-y: auto;
+    }
+    .irow { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
 <body>
 
-<div class="inputs-wrap">
-  <div class="group-box">
-    <div class="group-title">開始値</div>
-    <div class="inputs" style="grid-template-columns:1fr;">
-      <div class="input-group">
-        <label>数値1（開始）</label>
-        <input type="number" id="v1" inputmode="numeric" placeholder="0">
-      </div>
+<div id="results-wrap"><div id="results"></div></div>
+
+<div id="input-panel">
+  <div class="irow">
+    <div class="ig w2">
+      <label>数値1　端部垂木</label>
+      <input type="number" id="v1" inputmode="decimal" placeholder="107.5">
+    </div>
+    <div class="ig w2">
+      <label>数値7　穴ピッチ</label>
+      <input type="number" id="v7" inputmode="decimal" placeholder="38">
     </div>
   </div>
-
-  <div class="group-box g1">
-    <div class="group-title">グループ1</div>
-    <div class="inputs">
-      <div class="input-group">
-        <label>数値2</label>
-        <input type="number" id="v2" inputmode="numeric" placeholder="0">
-      </div>
-      <div class="input-group">
-        <label>数値3（0=省略）</label>
-        <input type="number" id="v3" inputmode="numeric" placeholder="0">
-      </div>
-      <div class="input-group full">
-        <label>数値4（繰り返し回数）</label>
-        <input type="number" id="v4" inputmode="numeric" placeholder="1" min="0" max="100">
-      </div>
+  <div class="irow">
+    <div class="ig w4">
+      <label>数値2　2本目の垂木までの距離</label>
+      <input type="number" id="v2" inputmode="decimal" placeholder="532.5">
     </div>
   </div>
-
-  <div class="group-box g2">
-    <div class="group-title">グループ2</div>
-    <div class="inputs">
-      <div class="input-group">
-        <label>数値5（0=省略）</label>
-        <input type="number" id="v5" inputmode="numeric" placeholder="0">
-      </div>
-      <div class="input-group">
-        <label>数値6（0=省略）</label>
-        <input type="number" id="v6" inputmode="numeric" placeholder="0">
-      </div>
-      <div class="input-group full">
-        <label>数値7（繰り返し回数）</label>
-        <input type="number" id="v7" inputmode="numeric" placeholder="0" min="0" max="100">
-      </div>
+  <div class="irow">
+    <div class="ig w2">
+      <label>数値3　3本目以降の距離</label>
+      <input type="number" id="v3" inputmode="decimal" placeholder="590">
+    </div>
+    <div class="ig w2">
+      <label>数値4　繰り返し（片側）</label>
+      <input type="number" id="v4" inputmode="numeric" placeholder="1" min="0" max="50">
+    </div>
+  </div>
+  <div class="irow">
+    <div class="ig w2">
+      <label>数値5　中央の距離（0=省略）</label>
+      <input type="number" id="v5" inputmode="decimal" placeholder="0">
+    </div>
+    <div class="ig w2">
+      <label>数値6　繰り返し</label>
+      <input type="number" id="v6" inputmode="numeric" placeholder="0" min="0" max="50">
     </div>
   </div>
 </div>
 
-<div id="results"></div>
-
 <script>
-  const IDS = ['v1','v2','v3','v4','v5','v6','v7'];
+const IDS = ['v1','v2','v3','v4','v5','v6','v7'];
 
-  function save() {
-    const data = {};
-    IDS.forEach(id => data[id] = document.getElementById(id).value);
-    localStorage.setItem('shitaana_v2', JSON.stringify(data));
+function save() {
+  const d = {};
+  IDS.forEach(id => d[id] = document.getElementById(id).value);
+  localStorage.setItem('shitaana_v3', JSON.stringify(d));
+}
+
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem('shitaana_v3') || '{}');
+    IDS.forEach(id => { if (d[id] != null) document.getElementById(id).value = d[id]; });
+  } catch(e) {}
+}
+
+function fmt(n) {
+  return Number(n).toLocaleString('ja-JP', {maximumFractionDigits: 2});
+}
+
+function appendCheckRow(out, cls, innerHTML) {
+  const row = document.createElement('div');
+  row.className = 'row ' + cls;
+  row.innerHTML = '<input type="checkbox">' + innerHTML;
+  row.querySelector('input').addEventListener('change', e =>
+    row.classList.toggle('done', e.target.checked));
+  out.appendChild(row);
+}
+
+function addARow(out, val) {
+  appendCheckRow(out, 'type-a', `<span class="val">${fmt(val)}</span>`);
+}
+
+function addHolePair(out, prev, pitch, half, colorCls) {
+  const h1 = prev + pitch - half;
+  const h2 = h1 + half * 2;
+  appendCheckRow(out, '',
+    `<span class="expr">${fmt(prev)} <span class="${colorCls}">+ ${fmt(pitch - half)}</span></span>
+     <span class="eq">=</span><span class="val">${fmt(h1)}</span>`);
+  appendCheckRow(out, '',
+    `<span class="expr">${fmt(h1)} <span class="${colorCls}">+ ${fmt(half * 2)}</span></span>
+     <span class="eq">=</span><span class="val">${fmt(h2)}</span>`);
+  return h2;
+}
+
+function calc() {
+  save();
+  const g  = id => parseFloat(document.getElementById(id).value) || 0;
+  const gi = id => Math.max(0, Math.min(50, parseInt(document.getElementById(id).value) || 0));
+
+  const v1 = g('v1'), v2 = g('v2'), v3 = g('v3'), v4 = gi('v4');
+  const v5 = g('v5'), v6 = gi('v6'), v7 = g('v7');
+  const half = v7 / 2;
+
+  const out = document.getElementById('results');
+  out.innerHTML = '';
+
+  let cur = v1;
+
+  // a (左端)
+  addARow(out, cur);
+
+  // b (左)
+  if (v2 > 0) cur = addHolePair(out, cur, v2, half, 'cl-b');
+
+  // c × v4 (左)
+  for (let i = 0; i < v4; i++)
+    if (v3 > 0) cur = addHolePair(out, cur, v3, half, 'cl-c');
+
+  // d × v6 (中央)
+  for (let i = 0; i < v6; i++)
+    if (v5 > 0) cur = addHolePair(out, cur, v5, half, 'cl-d');
+
+  // c × v4 (右、折り返し)
+  for (let i = 0; i < v4; i++)
+    if (v3 > 0) cur = addHolePair(out, cur, v3, half, 'cl-c');
+
+  // b (右)
+  const beforeRightB = cur;
+  if (v2 > 0) cur = addHolePair(out, cur, v2, half, 'cl-b');
+
+  // a (右端) = 右側bの垂木中心 + v1
+  if (v2 > 0) {
+    const rightBCenter = beforeRightB + v2;
+    addARow(out, rightBCenter + v1);
   }
+}
 
-  function load() {
-    try {
-      const data = JSON.parse(localStorage.getItem('shitaana_v2') || '{}');
-      IDS.forEach(id => { if (data[id] !== undefined) document.getElementById(id).value = data[id]; });
-    } catch(e) {}
-  }
-
-  function fmt(n) { return Number(n).toLocaleString('ja-JP'); }
-
-  function addRow(out, prev, addend, cls) {
-    const cur = prev + addend;
-    const row = document.createElement('div');
-    row.className = 'row';
-    row.innerHTML = `
-      <input type="checkbox">
-      <span class="expr">${fmt(prev)} <span class="${cls}">+ ${fmt(addend)}</span></span>
-      <span class="eq">=</span>
-      <span class="val">${fmt(cur)}</span>
-    `;
-    row.querySelector('input').addEventListener('change', e => {
-      row.classList.toggle('done', e.target.checked);
-    });
-    out.appendChild(row);
-    return cur;
-  }
-
-  function calc() {
-    save();
-    const g = id => parseFloat(document.getElementById(id).value) || 0;
-    const gi = id => Math.max(0, Math.min(100, parseInt(document.getElementById(id).value) || 0));
-
-    const v1 = g('v1');
-    const v2 = g('v2'), v3 = g('v3'), v4 = gi('v4');
-    const v5 = g('v5'), v6 = g('v6'), v7 = gi('v7');
-
-    const out = document.getElementById('results');
-    out.innerHTML = '';
-
-    let cur = v1;
-    const startRow = document.createElement('div');
-    startRow.className = 'row start';
-    startRow.innerHTML = `<input type="checkbox"><span class="val">${fmt(cur)}</span>`;
-    startRow.querySelector('input').addEventListener('change', e => {
-      startRow.classList.toggle('done', e.target.checked);
-    });
-    out.appendChild(startRow);
-
-    // Group 1
-    for (let i = 0; i < v4; i++) {
-      if (v2 !== 0) cur = addRow(out, cur, v2, 'addend-g1a');
-      if (v3 !== 0) cur = addRow(out, cur, v3, 'addend-g1b');
-    }
-
-    // Group 2
-    for (let i = 0; i < v7; i++) {
-      if (v5 !== 0) cur = addRow(out, cur, v5, 'addend-g2a');
-      if (v6 !== 0) cur = addRow(out, cur, v6, 'addend-g2b');
-    }
-  }
-
-  load();
-  calc();
-  document.querySelectorAll('input[type=number]').forEach(el => el.addEventListener('input', calc));
+load();
+calc();
+document.querySelectorAll('#input-panel input').forEach(el =>
+  el.addEventListener('input', calc));
 </script>
 </body>
 </html>
