@@ -6,38 +6,25 @@
   <title>管理画面 — よやくん</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .request-card {
-      border: 1px solid #E0E0E0;
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 12px;
-      background: #fff;
-    }
-    .request-card.pending  { border-left: 4px solid #FF9800; }
-    .request-card.approved { border-left: 4px solid #4CAF50; }
-    .request-card.denied   { border-left: 4px solid #F44336; }
-    .req-meta { font-size: .8rem; color: #9E9E9E; margin-bottom: 8px; }
-    .req-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
-    .req-detail { font-size: .9rem; margin-bottom: 10px; }
-    .req-actions { display: flex; gap: 8px; }
-    .req-actions button {
-      flex: 1; padding: 8px; border: none; border-radius: 8px;
-      font-weight: 600; cursor: pointer; font-size: .85rem; font-family: inherit;
-    }
-    .btn-approve { background: #4CAF50; color: #fff; }
-    .btn-deny    { background: #F44336; color: #fff; }
-    .filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-    .tab {
-      padding: 6px 14px; border-radius: 20px; font-size: .85rem;
-      border: 1px solid #E0E0E0; background: #fff; cursor: pointer; font-family: inherit;
-    }
-    .tab.active { background: #2196F3; color: #fff; border-color: #2196F3; }
-    #login-screen { max-width: 360px; margin: 60px auto; padding: 16px; }
+    .request-card { border:1px solid #E0E0E0; border-radius:10px; padding:14px; margin-bottom:12px; background:#fff; }
+    .request-card.pending  { border-left:4px solid #FF9800; }
+    .request-card.approved { border-left:4px solid #4CAF50; }
+    .request-card.denied   { border-left:4px solid #F44336; }
+    .req-meta   { font-size:.8rem; color:#9E9E9E; margin-bottom:8px; }
+    .req-name   { font-weight:700; font-size:1rem; margin-bottom:4px; }
+    .req-detail { font-size:.9rem; margin-bottom:10px; }
+    .req-actions { display:flex; gap:8px; }
+    .req-actions button { flex:1; padding:8px; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:.85rem; font-family:inherit; }
+    .btn-approve { background:#4CAF50; color:#fff; }
+    .btn-deny    { background:#F44336; color:#fff; }
+    .filter-tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+    .tab { padding:6px 14px; border-radius:20px; font-size:.85rem; border:1px solid #E0E0E0; background:#fff; cursor:pointer; font-family:inherit; }
+    .tab.active { background:#2196F3; color:#fff; border-color:#2196F3; }
+    #login-screen { max-width:360px; margin:60px auto; padding:16px; }
   </style>
 </head>
 <body>
 
-<!-- ログイン画面 -->
 <div id="login-screen">
   <div class="card">
     <h2 style="margin-bottom:16px;font-size:1.2rem">よやくん 管理画面</h2>
@@ -46,67 +33,68 @@
       <input type="password" id="pw-input" placeholder="管理パスワード">
     </div>
     <div id="login-error" style="color:#F44336;font-size:.85rem;margin-bottom:8px;display:none">
-      パスワードが違います
+      <span id="login-error-msg"></span>
     </div>
     <button class="btn btn-primary" id="btn-login">ログイン</button>
   </div>
 </div>
 
-<!-- 管理画面本体 -->
 <div id="admin-screen" style="display:none">
   <header>
     <h1>よやくん 管理画面</h1>
     <p>予約リクエスト一覧</p>
   </header>
-
   <div class="container" style="margin-top:16px">
-
     <div class="filter-tabs">
       <button class="tab active" data-filter="pending">審査中</button>
       <button class="tab" data-filter="approved">承認済み</button>
       <button class="tab" data-filter="denied">否認</button>
       <button class="tab" data-filter="all">すべて</button>
     </div>
-
-    <div id="requests-list">
-      <div class="loading-spinner">読み込み中...</div>
-    </div>
-
+    <div id="requests-list"><div class="loading-spinner">読み込み中...</div></div>
   </div>
 </div>
 
 <script>
-// ★ここを自分のGASデプロイURLに変更する
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbySfJ-3w38y8BFGTer5eqomxFRcL-P9XyQdEYD7UpR7iNyf9gdEK2XhCLCVaM4wVSgpTA/exec';
 
 let adminPassword = '';
 let allRequests   = [];
 let currentFilter = 'pending';
 
-// ログイン
 document.getElementById('btn-login').addEventListener('click', doLogin);
 document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
+function showLoginError(msg) {
+  document.getElementById('login-error-msg').textContent = msg;
+  document.getElementById('login-error').style.display = 'block';
+}
+
 async function doLogin() {
-  const pw = document.getElementById('pw-input').value;
+  const pw = document.getElementById('pw-input').value.trim();
   if (!pw) return;
   adminPassword = pw;
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('btn-login').textContent = '確認中...';
+  document.getElementById('btn-login').disabled = true;
   try {
     const res = await gasCall({ action: 'adminGetRequests', password: pw });
     if (!res.success) {
-      document.getElementById('login-error').style.display = 'block';
+      showLoginError(res.error === 'Unauthorized' ? 'パスワードが違います' : 'エラー: ' + (res.error || '不明'));
       return;
     }
     allRequests = res.requests;
-    document.getElementById('login-screen').style.display  = 'none';
-    document.getElementById('admin-screen').style.display  = 'block';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
     renderRequests();
   } catch(e) {
-    alert('通信エラー: ' + e.message);
+    showLoginError('通信エラー: ' + e.message);
+  } finally {
+    document.getElementById('btn-login').textContent = 'ログイン';
+    document.getElementById('btn-login').disabled = false;
   }
 }
 
-// フィルタータブ
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -116,18 +104,13 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-// リクエスト一覧描画
 function renderRequests() {
   const list = document.getElementById('requests-list');
-  const filtered = currentFilter === 'all'
-    ? allRequests
-    : allRequests.filter(r => r.status === currentFilter);
-
+  const filtered = currentFilter === 'all' ? allRequests : allRequests.filter(r => r.status === currentFilter);
   if (filtered.length === 0) {
     list.innerHTML = '<div class="alert alert-info">該当のリクエストはありません</div>';
     return;
   }
-
   list.innerHTML = filtered.map(r => {
     const statusLabel = { pending: '⏳ 審査中', approved: '✅ 承認済み', denied: '❌ 否認' }[r.status] || r.status;
     const date = new Date(r.createdAt).toLocaleDateString('ja-JP');
@@ -136,7 +119,6 @@ function renderRequests() {
         <button class="btn-approve" onclick="updateStatus('${r.id}','approved')">✅ 承認</button>
         <button class="btn-deny"    onclick="updateStatus('${r.id}','denied')">❌ 否認</button>
       </div>` : '';
-
     return `
       <div class="request-card ${r.status}">
         <div class="req-meta">${date} | ${r.id} | ${statusLabel}</div>
@@ -151,7 +133,6 @@ function renderRequests() {
   }).join('');
 }
 
-// ステータス更新
 async function updateStatus(requestId, status) {
   const label = status === 'approved' ? '承認' : '否認';
   if (!confirm(requestId + ' を' + label + 'しますか？')) return;
@@ -169,17 +150,16 @@ async function updateStatus(requestId, status) {
   }
 }
 
-// JSONP通信
 function gasCall(params) {
   return new Promise((resolve, reject) => {
     const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
     const qs = new URLSearchParams({ ...params, callback: cb }).toString();
     const script = document.createElement('script');
     script.src = GAS_URL + '?' + qs;
-    const timeout = setTimeout(() => { cleanup(); reject(new Error('タイムアウト')); }, 15000);
+    const timeout = setTimeout(() => { cleanup(); reject(new Error('15秒でタイムアウト。GASのデプロイURLを確認してください')); }, 15000);
     function cleanup() { clearTimeout(timeout); delete window[cb]; if (script.parentNode) document.head.removeChild(script); }
     window[cb] = data => { cleanup(); resolve(data); };
-    script.onerror = () => { cleanup(); reject(new Error('通信エラー')); };
+    script.onerror = () => { cleanup(); reject(new Error('接続できません。GASが正しくデプロイされているか確認してください')); };
     document.head.appendChild(script);
   });
 }
