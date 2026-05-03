@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>予約リクエスト — よやくん</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .calendar-wrap { padding-bottom: 8px; }
+    .dow-headers { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 4px; }
+    .dow-header  { text-align: center; font-size: .7rem; font-weight: 600; color: #9E9E9E; }
+    .dow-header.sun { color: #F44336; }
+    .dow-header.sat { color: #2196F3; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>予約リクエスト</h1>
+  <p id="user-name">読み込み中...</p>
+</header>
+
+<div class="container">
+
+  <!-- カレンダー -->
+  <div class="card calendar-wrap">
+    <div class="calendar-nav">
+      <button class="nav-btn" id="btn-prev">&#8249;</button>
+      <h2 id="cal-title">—</h2>
+      <button class="nav-btn" id="btn-next">&#8250;</button>
+    </div>
+
+    <div class="dow-headers">
+      <div class="dow-header sun">日</div>
+      <div class="dow-header">月</div>
+      <div class="dow-header">火</div>
+      <div class="dow-header">水</div>
+      <div class="dow-header">木</div>
+      <div class="dow-header">金</div>
+      <div class="dow-header sat">土</div>
+    </div>
+
+    <div class="calendar-grid" id="cal-grid">
+      <div class="loading-spinner" style="grid-column:1/-1">読み込み中...</div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot ld-available"></div>予約可能</div>
+      <div class="legend-item"><div class="legend-dot ld-busy"></div>受付不可</div>
+      <div class="legend-item"><div class="legend-dot ld-pending"></div>審査中</div>
+      <div class="legend-item"><div class="legend-dot ld-approved"></div>確定済み</div>
+      <div class="legend-item"><div class="legend-dot ld-closed"></div>対象外</div>
+    </div>
+  </div>
+
+  <!-- 予約フォーム（日付選択後に表示） -->
+  <div class="card form-section" id="form-section">
+    <div class="form-title">予約リクエスト内容</div>
+    <div class="selected-date-label" id="selected-date"></div>
+
+    <div class="form-group">
+      <label>内容</label>
+      <select id="sel-content"></select>
+    </div>
+    <div class="form-group">
+      <label>日数</label>
+      <select id="sel-days"></select>
+    </div>
+    <div class="form-group">
+      <label>地域</label>
+      <select id="sel-region"></select>
+    </div>
+    <div class="form-group">
+      <label>加工</label>
+      <select id="sel-processing"></select>
+    </div>
+    <div class="form-group">
+      <label>備考（任意）</label>
+      <textarea id="txt-notes" placeholder="連日の場合の終了日、詳細など"></textarea>
+    </div>
+
+    <div id="form-result"></div>
+
+    <button class="btn btn-primary" id="btn-submit">リクエストを送る</button>
+    <button
+      class="btn btn-secondary"
+      id="btn-check-status"
+      style="display:none;margin-top:8px"
+    >承認状況を確認する</button>
+    <button class="btn btn-secondary" id="btn-cancel" style="margin-top:8px">キャンセル</button>
+  </div>
+
+  <!-- ステータス確認 -->
+  <div class="card">
+    <div class="form-title">承認状況を確認</div>
+    <p style="font-size:.85rem;color:#757575;margin-bottom:12px">
+      送信時に表示された確認番号を入力してください
+    </p>
+    <div style="display:flex;gap:8px">
+      <input
+        type="text"
+        id="input-request-id"
+        placeholder="REQ-..."
+        style="flex:1;padding:10px 12px;border:1px solid #E0E0E0;border-radius:8px;font-size:.9rem"
+      >
+      <button
+        id="btn-check-input"
+        style="padding:10px 16px;background:#2196F3;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:.9rem"
+      >確認</button>
+    </div>
+    <div id="status-result" style="margin-top:12px"></div>
+  </div>
+
+</div>
+
+<script src="js/reserve.js"></script>
+</body>
+</html>

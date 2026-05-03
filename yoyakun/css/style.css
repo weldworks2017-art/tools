@@ -1,0 +1,248 @@
+/* よやくん — 共通スタイル */
+:root {
+  --green:  #4CAF50;
+  --blue:   #2196F3;
+  --orange: #FF9800;
+  --red:    #F44336;
+  --gray:   #9E9E9E;
+  --light:  #F5F5F5;
+  --bg:     #FAFAFA;
+  --text:   #212121;
+  --sub:    #757575;
+  --border: #E0E0E0;
+  --radius: 12px;
+  --shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* ヘッダー */
+header {
+  background: var(--blue);
+  color: #fff;
+  padding: 16px;
+  text-align: center;
+}
+header h1 { font-size: 1.3rem; font-weight: 700; }
+header p  { font-size: .85rem; opacity: .85; margin-top: 2px; }
+
+/* カード */
+.card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* カレンダー */
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.calendar-nav h2 { font-size: 1.1rem; }
+.nav-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 36px; height: 36px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.nav-btn:hover { background: var(--light); }
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-header {
+  text-align: center;
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--sub);
+  padding: 4px 0;
+}
+.cal-header:first-child { color: var(--red); }
+.cal-header:last-child  { color: var(--blue); }
+
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: .85rem;
+  font-weight: 500;
+  cursor: default;
+  position: relative;
+  transition: transform .1s;
+}
+.cal-day.empty { background: none; }
+.cal-day.available {
+  background: #E8F5E9;
+  color: #2E7D32;
+  cursor: pointer;
+  border: 2px solid var(--green);
+}
+.cal-day.available:hover { background: #C8E6C9; transform: scale(1.05); }
+.cal-day.available.selected { background: var(--green); color: #fff; }
+.cal-day.past, .cal-day.sunday, .cal-day.holiday {
+  background: #F5F5F5; color: #BDBDBD;
+}
+.cal-day.busy, .cal-day.restricted, .cal-day.weekFull, .cal-day.tooFar {
+  background: #FFEBEE; color: #EF9A9A;
+}
+.cal-day.pending  { background: #FFF3E0; color: #F57C00; border: 2px solid var(--orange); }
+.cal-day.approved { background: #E3F2FD; color: #1565C0; border: 2px solid var(--blue); }
+.cal-day.loading  { background: var(--light); color: var(--gray); }
+
+/* 凡例 */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: .75rem;
+  color: var(--sub);
+}
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot {
+  width: 12px; height: 12px;
+  border-radius: 3px;
+}
+.ld-available { background: var(--green); }
+.ld-busy      { background: #EF9A9A; }
+.ld-pending   { background: var(--orange); }
+.ld-approved  { background: var(--blue); }
+.ld-closed    { background: #BDBDBD; }
+
+/* フォーム */
+.form-section { display: none; }
+.form-section.visible { display: block; }
+
+.form-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--blue);
+}
+.selected-date-label {
+  font-size: .9rem;
+  color: var(--sub);
+  margin-bottom: 16px;
+}
+
+.form-group { margin-bottom: 14px; }
+.form-group label {
+  display: block;
+  font-size: .85rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--sub);
+}
+.form-group select,
+.form-group textarea,
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: .95rem;
+  font-family: inherit;
+  background: #fff;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239E9E9E' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color .15s;
+}
+.form-group select:focus,
+.form-group textarea:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+.form-group textarea {
+  background-image: none;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  font-family: inherit;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary   { background: var(--blue);  color: #fff; }
+.btn-success   { background: var(--green); color: #fff; }
+.btn-danger    { background: var(--red);   color: #fff; }
+.btn-secondary { background: var(--light); color: var(--text); }
+.btn:disabled  { opacity: .5; cursor: not-allowed; }
+.btn + .btn    { margin-top: 8px; }
+
+/* ステータス表示 */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.status-pending  { background: #FFF3E0; color: #E65100; }
+.status-approved { background: #E3F2FD; color: #1565C0; }
+.status-denied   { background: #FFEBEE; color: #B71C1C; }
+
+/* アラート */
+.alert {
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: .9rem;
+  margin-bottom: 12px;
+}
+.alert-info    { background: #E3F2FD; color: #1565C0; }
+.alert-success { background: #E8F5E9; color: #2E7D32; }
+.alert-error   { background: #FFEBEE; color: #B71C1C; }
+.alert-warning { background: #FFF3E0; color: #E65100; }
+
+/* ローディング */
+.loading-spinner {
+  text-align: center;
+  color: var(--sub);
+  padding: 24px;
+  font-size: .9rem;
+}
+
+/* レスポンシブ */
+@media (max-width: 360px) {
+  .cal-day { font-size: .75rem; }
+}
