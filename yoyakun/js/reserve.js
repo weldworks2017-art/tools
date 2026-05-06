@@ -307,34 +307,18 @@ function fmt(y, m, d) {
   return y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
 }
 
-function gasCall(params) {
-  return new Promise((resolve, reject) => {
-    const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    const qs = new URLSearchParams({ ...params, callback: cb }).toString();
-    const script = document.createElement('script');
-    script.src = GAS_URL + '?' + qs;
-
-    const timeout = setTimeout(() => {
-      delete window[cb];
-      document.head.removeChild(script);
-      reject(new Error('タイムアウト'));
-    }, 15000);
-
-    window[cb] = (data) => {
-      clearTimeout(timeout);
-      delete window[cb];
-      document.head.removeChild(script);
-      resolve(data);
-    };
-
-    script.onerror = () => {
-      clearTimeout(timeout);
-      delete window[cb];
-      reject(new Error('通信エラー'));
-    };
-
-    document.head.appendChild(script);
-  });
+async function gasCall(params) {
+  const qs = new URLSearchParams(params).toString();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(GAS_URL + '?' + qs, { signal: controller.signal });
+    clearTimeout(timer);
+    return await res.json();
+  } catch (e) {
+    clearTimeout(timer);
+    throw new Error(e.name === 'AbortError' ? 'タイムアウト' : '通信エラー: ' + e.message);
+  }
 }
 
 function showError(msg) {
