@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     await loadDropdowns();
     await loadUserInfo();
-    await loadCalendar();
+    await Promise.all([loadCalendar(), loadHistory()]);
     setupForm();
   } catch (e) {
     showError('読み込みに失敗しました: ' + e.message);
@@ -239,6 +239,27 @@ async function submitRequest() {
 function showFormAlert(html, type) {
   const el = document.getElementById('form-result');
   el.innerHTML = '<div class="alert alert-' + type + '">' + html + '</div>';
+}
+
+// ============================================================
+// リクエスト履歴
+// ============================================================
+async function loadHistory() {
+  const el = document.getElementById('history-list');
+  const res = await gasCall({ action: 'getUserRequests', token: State.token });
+  if (!res.success || res.requests.length === 0) {
+    el.innerHTML = '<p style="font-size:.85rem;color:#9E9E9E;text-align:center;padding:8px 0">まだリクエストはありません</p>';
+    return;
+  }
+  const labels = { pending: '⏳ 審査中', approved: '✅ 承認済み', denied: '❌ 否認' };
+  const colors = { pending: '#FF9800', approved: '#4CAF50', denied: '#F44336' };
+  el.innerHTML = res.requests.map(r => `
+    <div style="border-left:3px solid ${colors[r.status]||'#9E9E9E'};padding:8px 12px;margin-bottom:8px;background:#fafafa;border-radius:4px">
+      <div style="font-size:.75rem;color:#9E9E9E">${r.date} / ${r.days}</div>
+      <div style="font-size:.9rem;font-weight:600">${r.content}</div>
+      <div style="font-size:.8rem;color:${colors[r.status]||'#9E9E9E'};margin-top:2px">${labels[r.status]||r.status}</div>
+    </div>
+  `).join('');
 }
 
 // ============================================================

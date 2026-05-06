@@ -33,6 +33,7 @@ function doGet(e) {
       case 'getStatus':          result = getRequestStatus(e.parameter);     break;
       case 'getDropdowns':       result = getDropdownOptions();              break;
       case 'getUserInfo':        result = getUserInfo(e.parameter.token);    break;
+      case 'getUserRequests':    result = getUserRequests(e.parameter);      break;
       case 'adminGetRequests':   result = adminGetRequests(e.parameter);     break;
       case 'adminUpdateStatus':  result = adminUpdateStatus(e.parameter);    break;
       case 'setup':              result = setupSpreadsheet();                break;
@@ -314,6 +315,23 @@ function setupSpreadsheet() {
   }
 
   return { success: true, message: 'セットアップ完了' };
+}
+
+// ============================================================
+// ユーザー自身のリクエスト一覧
+// ============================================================
+function getUserRequests(params) {
+  const user = getUserByToken(params.token);
+  if (!user) return { success: false, error: 'アクセスできません' };
+  const data = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID)
+    .getSheetByName('reservations').getDataRange().getValues();
+  const rows = [];
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][1] === params.token) {
+      rows.push({ id: data[i][0], date: data[i][3], days: data[i][4], content: data[i][5], status: data[i][9], createdAt: data[i][10] });
+    }
+  }
+  return { success: true, requests: rows.reverse() };
 }
 
 // ============================================================
