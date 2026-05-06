@@ -215,13 +215,14 @@ async function submitRequest() {
 
     if (res.success) {
       State.submittedId = res.requestId;
+      saveRequestId(res.requestId);
       showFormAlert(
         '✅ リクエストを送信しました！<br>確認番号: <strong>' + res.requestId + '</strong><br>' +
         'このページで承認状況を確認できます。',
         'success'
       );
       btn.textContent = '送信済み';
-      // 承認状況確認ボタン表示
+      loadHistory();
       document.getElementById('btn-check-status').style.display = 'block';
       document.getElementById('btn-check-status').dataset.id = res.requestId;
     } else {
@@ -242,24 +243,36 @@ function showFormAlert(html, type) {
 }
 
 // ============================================================
-// リクエスト履歴
+// リクエスト履歴（localStorageから取得してGASで最新ステータスを反映）
 // ============================================================
+function getSavedIds() {
+  try { return JSON.parse(localStorage.getItem('yoyakun_' + State.token) || '[]'); } catch { return []; }
+}
+
+function saveRequestId(id) {
+  const ids = getSavedIds();
+  if (!ids.includes(id)) { ids.unshift(id); localStorage.setItem('yoyakun_' + State.token, JSON.stringify(ids.slice(0, 20))); }
+}
+
 async function loadHistory() {
   const el = document.getElementById('history-list');
-  const res = await gasCall({ action: 'getUserRequests', token: State.token });
-  if (!res.success || res.requests.length === 0) {
+  const ids = getSavedIds();
+  if (ids.length === 0) {
     el.innerHTML = '<p style="font-size:.85rem;color:#9E9E9E;text-align:center;padding:8px 0">まだリクエストはありません</p>';
     return;
   }
+  el.innerHTML = '<div class="loading-spinner">読み込み中...</div>';
   const labels = { pending: '⏳ 審査中', approved: '✅ 承認済み', denied: '❌ 否認' };
   const colors = { pending: '#FF9800', approved: '#4CAF50', denied: '#F44336' };
-  el.innerHTML = res.requests.map(r => `
-    <div style="border-left:3px solid ${colors[r.status]||'#9E9E9E'};padding:8px 12px;margin-bottom:8px;background:#fafafa;border-radius:4px">
+  const results = await Promise.all(ids.map(id => gasCall({ action: 'getStatus', requestId: id }).catch(() => null)));
+  el.innerHTML = results.map((r, i) => {
+    if (!r || !r.success) return `<div style="border-left:3px solid #9E9E9E;padding:8px 12px;margin-bottom:8px;background:#fafafa;border-radius:4px"><div style="font-size:.85rem;color:#9E9E9E">確認番号: ${ids[i]}</div></div>`;
+    return `<div style="border-left:3px solid ${colors[r.status]||'#9E9E9E'};padding:8px 12px;margin-bottom:8px;background:#fafafa;border-radius:4px">
       <div style="font-size:.75rem;color:#9E9E9E">${r.date} / ${r.days}</div>
       <div style="font-size:.9rem;font-weight:600">${r.content}</div>
       <div style="font-size:.8rem;color:${colors[r.status]||'#9E9E9E'};margin-top:2px">${labels[r.status]||r.status}</div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 // ============================================================
